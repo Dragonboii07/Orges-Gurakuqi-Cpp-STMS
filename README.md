@@ -128,15 +128,6 @@ German grade for this student (1-6): 5
   -> Bob Weber not approved (grade 5 - failing).
 ```
 
-## Future Improvements
-
-- [ ] Persistent data storage (file/database)
-- [ ] Input validation and error handling
-- [ ] Student search and filtering
-- [ ] Grade statistics and averages
-- [ ] Teacher-student relationship management
-- [ ] Graphical User Interface (GUI)
-
 ## Author
 
 Orges Gurakuqi
