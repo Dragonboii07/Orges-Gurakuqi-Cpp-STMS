@@ -1,7 +1,5 @@
-#include "../include/teacher.h"
-#include <iostream>
-#include <vector>
-#include <string>
+#include "teacher.h"
+#include "input.h"
 
 using namespace std;
 
@@ -21,49 +19,42 @@ int Teacher::getNrOfClasses() const {
     return nrOfClasses;
 }
 
-void Teacher::insertStudents() {
-    int n;
-    double average;
-    string name;
-    // ask for number of students, must be non-negative
-    do {
-        cout << "How many students are there? ";
-        cin >> n;
-        if (n < 0) {
-            cout << "Number of students cannot be negative." << endl;
-        }
-    } while (n < 0);
-    cin.ignore();
-    for (int i = 0; i < n; i++) {
-        cout << "Student " << (i+1) << " name: ";
-        getline(cin, name);
-        
-        // German grading system: 1-6, where 1 is best and 6 is worst
-        do {
-            cout << "German grade for this student (1-6): ";
-            cin >> average;
-            if (average < 1 || average > 6) {
-                cout << "Please enter a valid German grade between 1 and 6." << endl;
-            }
-        } while (average < 1 || average > 6);
-        cin.ignore();
+bool Teacher::isApproved(double grade) {
+    return grade >= 1.0 && grade <= PASSING_GRADE;
+}
 
-        if (average <= 4) {
-            students.push_back(name);
-            cout << "  -> " << name << " approved (grade " << average << ")." << endl;
+bool Teacher::addStudent(const string& name, double grade) {
+    if (!isApproved(grade)) return false;
+    students.push_back(name);
+    return true;
+}
+
+const vector<string>& Teacher::getStudents() const {
+    return students;
+}
+
+void Teacher::insertStudents(istream& in, ostream& out) {
+    int n = readInt(in, out, "How many students are there? ", 0, 1000);
+    for (int i = 0; i < n; i++) {
+        string name = readNonEmptyLine(in, out, "Student " + to_string(i + 1) + " name: ");
+        // German grading system: 1-6, where 1 is best and 6 is worst
+        double grade = readDouble(in, out, "German grade for this student (1-6): ", 1.0, 6.0);
+
+        if (addStudent(name, grade)) {
+            out << "  -> " << name << " approved (grade " << grade << ")." << endl;
         } else {
-            cout << "  -> " << name << " not approved (grade " << average << " - failing)." << endl;
+            out << "  -> " << name << " not approved (grade " << grade << " - failing)." << endl;
         }
     }
 }
 
-void Teacher::outputStudents() const {
+void Teacher::outputStudents(ostream& out) const {
     if (students.empty()) {
-        cout << "No approved students to list." << endl;
+        out << "No approved students to list." << endl;
         return;
     }
-    cout << "Approved students:" << endl;
+    out << "Approved students:" << endl;
     for (size_t i = 0; i < students.size(); ++i) {
-        cout << "  " << (i + 1) << ". " << students.at(i) << endl;
+        out << "  " << (i + 1) << ". " << students[i] << endl;
     }
 }

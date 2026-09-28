@@ -1,4 +1,4 @@
-#include "../include/person.h"
+#include "person.h"
 
 void Person::setName(const std::string& n) {
     name = n;
@@ -14,6 +14,10 @@ void Person::setSurname(const std::string& s) {
 
 std::string Person::getSurname() const {
     return surname;
+}
+
+std::string Person::getFullName() const {
+    return surname.empty() ? name : name + " " + surname;
 }
 
 void Person::setAge(int a) {

@@ -1,121 +1,106 @@
-# Orges Gurakuqi — C++ Project
+# Student & Teacher Management System (C++)
 
-A small C++ demo project that models `Person`, `Student` and `Teacher` classes and provides
-**Prerequisites:**
-- `g++` (MinGW / MSYS2 / TDM-GCC) installed and available on `PATH` (or use WSL).
-
-# Student & Teacher Management System
-
-A C++ application for managing student and teacher information with dynamic grade and class tracking.
+A command-line C++ program that models `Person`, `Student` and `Teacher`
+classes. Students enter their grades and get a report on the German grading
+scale; teachers enter their students' grades and get a list of who passed.
 
 ## Features
 
-- **Student Management**: Track student information including name, surname, age, faculty, class, and grades
-- **Teacher Management**: Manage teacher details including name, surname, age, title, number of classes, and student list
-- **Dynamic Data Entry**: Input and validate student/teacher data at runtime
-- **Grade Tracking**: Record and display student grades
-- **German Grading System**: Teachers use the German grading scale (1-6, where 1 is best and grades 1-4 are approved)
+* **Student mode**: name, surname, age, faculty and class, then any number of
+  grades with a summary report and average
+* **Teacher mode**: name, surname, age, title and number of classes, then a
+  registry of students where only grades 1-4 are approved
+* **German grading scale**: 1.0 (best) to 6.0 (worst), with the matching
+  descriptions (Sehr gut, Gut, Befriedigend, Ausreichend, Mangelhaft, Ungenügend);
+  decimal commas such as `2,3` are accepted
+* **Robust input**: every answer is checked and asked again if it is invalid
+  (for example letters where a number is expected), and the program exits
+  cleanly when the input ends
+* Unit tests for the input handling and the grade logic
 
-## Project Structure
+## Project structure
 
 ```
-├── src/
-│   ├── main.cpp              # Main application entry point
-│   ├── person.cpp            # Base Person class implementation
-│   ├── student.cpp           # Student class implementation
-│   └── teacher.cpp           # Teacher class implementation
 ├── include/
-│   ├── person.h              # Base Person class definition
-│   ├── student.h             # Student class definition
-│   └── teacher.h             # Teacher class definition
-├── bin/
-│   └── Debug/
-│       └── project.exe       # Compiled executable
-├── obj/
-│   └── Debug/                # Object files
-├── .vscode/
-│   ├── tasks.json            # VS Code build tasks
-│   ├── c_cpp_properties.json # IntelliSense configuration
-│   └── launch.json           # Debugger configuration
-└── README.md                 # This file
+│   ├── input.h        # input helpers: read and validate one answer
+│   ├── person.h       # Person base class
+│   ├── student.h      # Student class
+│   └── teacher.h      # Teacher class
+├── src/
+│   ├── main.cpp       # menu and forms
+│   ├── input.cpp
+│   ├── person.cpp
+│   ├── student.cpp
+│   └── teacher.cpp
+├── tests/
+│   └── stms_tests.cpp # unit tests
+├── CMakeLists.txt     # CMake build
+├── run.bat            # build and run on Windows with one double-click
+├── Orges_Gurakuqi_C++_Project.cbp  # Code::Blocks project
+└── .vscode/           # VS Code build and debug settings
 ```
 
-## Requirements
+## Class hierarchy
 
-- **Compiler**: GCC 13.2 or later (via MSYS2)
-- **Build Tool**: g++ (MinGW-w64)
-- **C++ Standard**: C++17 or later
+```
+Person (name, surname, age)
+├── Student (faculty, class, grades)
+└── Teacher (title, number of classes, approved students)
+```
 
-## Build Instructions
+## Building
 
-### Using VS Code (Recommended)
+Any C++17 compiler works: g++ (MinGW-w64 / MSYS2 on Windows), clang++ or MSVC.
 
-1. Open the project folder in VS Code
-2. Press `Ctrl+Shift+B` to build
-3. Press `F5` to run with debugger
-4. Or use Task → Run Task → "Build Project (g++)"
+### Windows, quickest way
 
-### Using Command Line
+Double-click `run.bat`, or run it from a terminal in the project folder. It
+builds `bin\Debug\project.exe` with g++ and starts it.
+
+### VS Code
+
+Open the folder, press `Ctrl+Shift+B` to build and `F5` to run with the
+debugger. The settings expect MSYS2 in `C:\msys64\ucrt64`; change the paths in
+`.vscode/` if your compiler is somewhere else.
+
+### Code::Blocks
+
+Open `Orges_Gurakuqi_C++_Project.cbp` and press Build and run (`F9`).
+
+### Command line (g++)
 
 ```bash
-cd "C:\orges programming\orges c++"
-
-# Build
-g++ -g -I./include -o ./bin/Debug/project.exe \
-    src/main.cpp src/person.cpp src/student.cpp src/teacher.cpp
-
-# Run
-./bin/Debug/project.exe
+g++ -std=c++17 -Wall -Wextra -Iinclude src/*.cpp -o stms
+./stms
 ```
 
-## Class Hierarchy
+### CMake (also builds the tests)
+
+```bash
+cmake -S . -B build
+cmake --build build
+./build/stms            # on Windows with Visual Studio: build\Debug\stms.exe
+```
+
+## Running the tests
+
+```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+## Usage example
 
 ```
-Person (Base Class)
-├── Student
-└── Teacher
-```
+Are you a student (S) or a teacher (T)? T
 
-## Class Descriptions
-
-### Person
-Base class for both Student and Teacher
-- Properties: `name`, `surname`, `age`
-- Methods: getters and setters for all properties
-
-### Student : public Person
-Extends Person class with academic information
-- Additional Properties: `faculty`, `class`, `grades` (vector)
-- Methods: 
-  - `setFaculty()` / `getFaculty()`
-  - `setCls()` / `getCls()`
-  - `pushData()` - Input student grades
-  - `outputData()` - Display grade vector
-
-### Teacher : public Person
-Extends Person class with professional information
-- Additional Properties: `title`, `nrOfClasses`, `students` (vector)
-- Methods:
-  - `setTitle()` / `getTitle()`
-  - `setNrOfClasses()` / `getNrOfClasses()`
-  - `insertStudents()` - Add students with German grade validation (1-6 scale, approval threshold: grades 1-4)
-  - `outputStudents()` - Display approved students list
-
-## Usage Example
-
-```
-Welcome to our system.
-======================================
-Are you a student (S) or a teacher(T)?
-T
-Full Name:
-John Smith
-Title (Professor/Dr./Instructor):
-Dr.
-Age:
-35
-Number of Classes:
-2
+--- TEACHER INFORMATION FORM ---
+Name: John
+Surname: Smith
+Age: 35
+Title (Professor/Dr./Instructor): Dr.
+Number of Classes: 2
 
 --- APPROVED STUDENTS REGISTRY ---
 (Only students with German grade 1-4 will be approved)
@@ -126,17 +111,23 @@ German grade for this student (1-6): 2
 Student 2 name: Bob Weber
 German grade for this student (1-6): 5
   -> Bob Weber not approved (grade 5 - failing).
+
+--- APPROVED STUDENTS LIST ---
+Approved students:
+  1. Anna Mueller
 ```
 
-## Author
+## Credits
 
-Orges Gurakuqi
+Designed and built by Orges Gurakuqi: the class hierarchy, the student and
+teacher forms and the German grading logic.
+
+I used an AI coding assistant (Claude) to review and polish the project. It
+helped me fix the program getting stuck in an endless loop on invalid input,
+move the input checks into one place, repair the Code::Blocks and VS Code
+build settings, add a CMake build and write the tests.
 
 ## License
 
-This project is for educational purposes.
-
-## Build Status
-
-Last Build: ✅ Successful (g++ 15.2.0)  
-Last Build Date: February 28, 2026
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for
+details.

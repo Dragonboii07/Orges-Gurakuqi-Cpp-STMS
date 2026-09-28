@@ -29,16 +29,21 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++17" />
 			<Add option="-Wall" />
+			<Add option="-Wextra" />
+			<Add directory="include" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="Person.h" />
-		<Unit filename="Student.h" />
-		<Unit filename="Teacher.h" />
-		<Unit filename="main.cpp" />
-		<Unit filename="person.cpp" />
-		<Unit filename="student.cpp" />
-		<Unit filename="teacher.cpp" />
+		<Unit filename="include/input.h" />
+		<Unit filename="include/person.h" />
+		<Unit filename="include/student.h" />
+		<Unit filename="include/teacher.h" />
+		<Unit filename="src/input.cpp" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/person.cpp" />
+		<Unit filename="src/student.cpp" />
+		<Unit filename="src/teacher.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

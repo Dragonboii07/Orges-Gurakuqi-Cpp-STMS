@@ -1,10 +1,9 @@
 #include <iostream>
-#include <vector>
-#include <locale>
-#include <limits>
-#include "../include/person.h"
-#include "../include/student.h"
-#include "../include/teacher.h"
+#include <string>
+#include "input.h"
+#include "person.h"
+#include "student.h"
+#include "teacher.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -18,103 +17,48 @@ using namespace std;
 
 static void setUtf8Console() {
 #ifdef _WIN32
-    // switch Windows console to UTF‑8 so output renders properly
+    // switch Windows console to UTF-8 so output renders properly
     SetConsoleCP(CP_UTF8);
     SetConsoleOutputCP(CP_UTF8);
 #endif
 }
 
-static char promptUserType() {
-    char answer;
-    cout << "\nAre you a student (S) or a teacher (T)? ";
-    cin >> answer;
-    while (answer != 's' && answer != 'S' && answer != 't' && answer != 'T') {
-        cout << "Please type 'S' for student or 'T' for teacher: ";
-        cin >> answer;
-    }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    return answer;
-}
-
-static bool askContinue() {
-    char again;
-    cout << "\nWould you like to perform another operation? (Y/N): ";
-    cin >> again;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    return (again == 'Y' || again == 'y');
+// asks for the fields every person has
+static void readPerson(Person& p) {
+    p.setName(readNonEmptyLine(cin, cout, "Name: "));
+    p.setSurname(readNonEmptyLine(cin, cout, "Surname: "));
+    p.setAge(readInt(cin, cout, "Age: ", 1, 150));
 }
 
 static void handleStudent() {
-    string fullname, faculty, cls;
-    int age;
     Student s;
 
     cout << "\n--- STUDENT INFORMATION FORM ---" << endl;
-    cout << "Full Name: ";
-    getline(cin, fullname);
-    cout << "Faculty: ";
-    getline(cin, faculty);
-    cout << "Class/Grade: ";
-    getline(cin, cls);
-
-    do {
-        cout << "Age: ";
-        if (!(cin >> age)) {
-            cin.clear();
-            age = -1;
-        }
-        if (age <= 0) cout << "Age must be a positive integer." << endl;
-    } while (age <= 0);
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-    s.setName(fullname);
-    s.setAge(age);
-    s.setFaculty(faculty);
-    s.setCls(cls);
+    readPerson(s);
+    s.setFaculty(readNonEmptyLine(cin, cout, "Faculty: "));
+    s.setCls(readNonEmptyLine(cin, cout, "Class/Grade: "));
 
     cout << "\n--- INFORMATION SUMMARY ---" << endl;
-    cout << "Name: " << fullname << "\n"
-         << "Faculty: " << faculty << "\n"
-         << "Class: " << cls << "\n"
-         << "Age: " << age << endl;
+    cout << "Name: " << s.getFullName() << "\n"
+         << "Age: " << s.getAge() << "\n"
+         << "Faculty: " << s.getFaculty() << "\n"
+         << "Class: " << s.getCls() << endl;
 
     s.pushData();
 }
 
 static void handleTeacher() {
-    string fullname, title;
-    int age, nocls;
     Teacher t;
 
     cout << "\n--- TEACHER INFORMATION FORM ---" << endl;
-    cout << "Full Name: ";
-    getline(cin, fullname);
-    cout << "Title (Professor/Dr./Instructor): ";
-    getline(cin, title);
-
-    do {
-        cout << "Age: ";
-        if (!(cin >> age)) { cin.clear(); age = -1; }
-        if (age <= 0) cout << "Age must be a positive integer." << endl;
-    } while (age <= 0);
-
-    do {
-        cout << "Number of Classes: ";
-        if (!(cin >> nocls)) { cin.clear(); nocls = -1; }
-        if (nocls < 0) cout << "Number of classes cannot be negative." << endl;
-    } while (nocls < 0);
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-    t.setName(fullname);
-    t.setAge(age);
-    t.setTitle(title);
-    t.setNrOfClasses(nocls);
+    readPerson(t);
+    t.setTitle(readNonEmptyLine(cin, cout, "Title (Professor/Dr./Instructor): "));
+    t.setNrOfClasses(readInt(cin, cout, "Number of Classes: ", 0, 100));
 
     cout << "\n--- TEACHER INFORMATION SUMMARY ---" << endl;
-    cout << "Name: " << fullname << "\n"
-         << "Title: " << title << "\n"
-         << "Age: " << age << "\n"
-         << "Classes: " << nocls << endl;
+    cout << "Name: " << t.getTitle() << " " << t.getFullName() << "\n"
+         << "Age: " << t.getAge() << "\n"
+         << "Classes: " << t.getNrOfClasses() << endl;
 
     cout << "\n--- APPROVED STUDENTS REGISTRY ---" << endl;
     cout << "(Only students with German grade 1-4 will be approved)\n";
@@ -134,17 +78,18 @@ int main() {
     cout << "========================================" << endl;
     cout << "   Student & Teacher Management System  " << endl;
     cout << "========================================" << endl;
-    cout << "A simple CLI demo with friendly prompts" << endl;
 
-    bool cont = true;
-    while (cont) {
-        char answer = promptUserType();
-        if (answer == 's' || answer == 'S') {
-            handleStudent();
-        } else {
-            handleTeacher();
-        }
-        cont = askContinue();
+    try {
+        do {
+            char answer = readChoice(cin, cout, "\nAre you a student (S) or a teacher (T)? ", "ST");
+            if (answer == 'S') {
+                handleStudent();
+            } else {
+                handleTeacher();
+            }
+        } while (readChoice(cin, cout, "\nWould you like to perform another operation? (Y/N): ", "YN") == 'Y');
+    } catch (const InputEnded&) {
+        cout << "\n(end of input)" << endl;
     }
 
     cout << "\nThank you for using the program. Goodbye!" << endl;

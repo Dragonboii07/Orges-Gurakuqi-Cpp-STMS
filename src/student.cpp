@@ -1,7 +1,7 @@
-#include "../include/student.h"
-#include <iostream>
-#include <vector>
-#include <limits>
+#include "student.h"
+#include "input.h"
+
+#include <iomanip>
 
 using namespace std;
 
@@ -13,89 +13,75 @@ string Student::getFaculty() const {
     return faculty;
 }
 
-void Student::setCls(const std::string& c) {
+void Student::setCls(const string& c) {
     cls = c;
 }
 
-std::string Student::getCls() const {
+string Student::getCls() const {
     return cls;
 }
 
-void Student::pushData() {
-    int n;
-    double grade;
-    
-    cout << "\n--- GERMAN GRADE ENTRY SYSTEM ---" << endl;
-    cout << "(enter notes on a scale from 1.0 [best] to 6.0 [worst])" << endl;
-    
-    // ensure user enters a positive number of grades
-    do {
-        cout << "\nHow many grades do you want to enter? ";
-        cin >> n;
-        cin.ignore();
-        if (n <= 0) {
-            cout << "Invalid input. Number of grades must be positive." << endl;
-        }
-    } while (n <= 0);
+string Student::gradeDescriptor(double g) {
+    if (g <= 1.5) return "Sehr gut";
+    if (g <= 2.5) return "Gut";
+    if (g <= 3.5) return "Befriedigend";
+    if (g <= 4.0) return "Ausreichend";
+    if (g <= 5.0) return "Mangelhaft";
+    return "Ungenügend";
+}
 
-    cout << "\nEnter your grades below:" << endl;
-    cout << "─────────────────────────────────────────" << endl;
-    
-    for (int i = 0; i < n; i++) {
-        // each grade must be between 1.0 and 6.0
-        do {
-            cout << "  Grade " << (i + 1) << " (1.0-6.0): ";
-            if (!(cin >> grade)) {
-                if (cin.eof()) {
-                    cout << "\nEnd of input encountered. Aborting grade entry." << endl;
-                    return;
-                }
-                // non-numeric or other failure; clear and discard rest of line
-                cin.clear();
-                cin.ignore(10000, '\n');
-                grade = 0; // force loop retry
-                cout << "  Please enter a numeric value." << endl;
-            } else if (grade < 1.0 || grade > 6.0) {
-                cout << "  Please enter a value between 1.0 and 6.0." << endl;
-            }
-        } while (grade < 1.0 || grade > 6.0);
-        grades.push_back(grade);
-        cin.ignore(10000, '\n'); // consume leftover newline
-    }
+bool Student::addGrade(double grade) {
+    if (grade < BEST_GRADE || grade > WORST_GRADE) return false;
+    grades.push_back(grade);
+    return true;
+}
 
+const vector<double>& Student::getGrades() const {
+    return grades;
+}
 
-    cout << "\n--- GRADE SUMMARY REPORT ---" << endl;
-    
+double Student::averageGrade() const {
+    if (grades.empty()) return 0.0;
     double sum = 0;
     for (double g : grades) {
         sum += g;
     }
-    double average = grades.empty() ? 0.0 : sum / grades.size();
-
-    auto descriptor = [&](double g) {
-        if (g <= 1.5) return string("Sehr gut");
-        if (g <= 2.5) return string("Gut");
-        if (g <= 3.5) return string("Befriedigend");
-        if (g <= 4.0) return string("Ausreichend");
-        if (g <= 5.0) return string("Mangelhaft");
-        return string("Ungenügend");
-    };
-
-    cout << "\nAll Grades Entered:" << endl;
-    for (size_t i = 0; i < grades.size(); i++) {
-        double g = grades.at(i);
-        cout << "  [" << (i + 1) << "] " << g << " (" << descriptor(g) << ")" << endl;
-    }
-    
-    cout << "\n─────────────────────────────────────────" << endl;
-    cout << "  Average Grade: " << average;
-    cout << " (" << descriptor(average) << ")" << endl;
-    cout << "─────────────────────────────────────────" << endl << endl;
+    return sum / grades.size();
 }
 
-void Student::outputData(const vector<double>& v) const {
-    for (size_t i = 0; i < v.size(); i++) {
-        cout << v.at(i) << " ";
+void Student::pushData(istream& in, ostream& out) {
+    out << "\n--- GERMAN GRADE ENTRY SYSTEM ---" << endl;
+    out << "(enter grades on a scale from 1.0 [best] to 6.0 [worst])" << endl;
+
+    int n = readInt(in, out, "\nHow many grades do you want to enter? ", 1, 100);
+
+    out << "\nEnter your grades below:" << endl;
+    out << "─────────────────────────────────────────" << endl;
+    for (int i = 0; i < n; i++) {
+        string prompt = "  Grade " + to_string(i + 1) + " (1.0-6.0): ";
+        addGrade(readDouble(in, out, prompt, BEST_GRADE, WORST_GRADE));
     }
-    cout << endl;
+
+    printReport(out);
+}
+
+void Student::printReport(ostream& out) const {
+    out << "\n--- GRADE SUMMARY REPORT ---" << endl;
+    if (grades.empty()) {
+        out << "No grades entered." << endl;
+        return;
+    }
+
+    out << fixed << setprecision(1);
+    out << "\nAll Grades Entered:" << endl;
+    for (size_t i = 0; i < grades.size(); i++) {
+        out << "  [" << (i + 1) << "] " << grades[i] << " (" << gradeDescriptor(grades[i]) << ")" << endl;
+    }
+
+    double average = averageGrade();
+    out << "\n─────────────────────────────────────────" << endl;
+    out << "  Average Grade: " << setprecision(2) << average
+        << " (" << gradeDescriptor(average) << ")" << endl;
+    out << "─────────────────────────────────────────" << endl << endl;
+    out << defaultfloat << setprecision(6);
 }

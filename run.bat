@@ -4,7 +4,7 @@ if not exist "bin\Debug" (
 )
 
 echo Building project...
-g++ -g -I"include" -o "bin\Debug\project.exe" "src\main.cpp" "src\person.cpp" "src\student.cpp" "src\teacher.cpp"
+g++ -std=c++17 -Wall -Wextra -g -I"include" -o "bin\Debug\project.exe" "src\main.cpp" "src\input.cpp" "src\person.cpp" "src\student.cpp" "src\teacher.cpp"
 if errorlevel 1 (
   echo.
   echo Build failed.
